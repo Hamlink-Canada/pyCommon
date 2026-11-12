@@ -52,7 +52,9 @@ def test_migration_cli_reads_url_file_and_forwards_revision(monkeypatch, tmp_pat
 
 def test_migration_cli_hides_failure_details(monkeypatch, capsys):
     monkeypatch.setenv("RPT_MIGRATION_DATABASE_URL", "sqlite:///unused.db")
-    monkeypatch.setattr(migrate, "upgrade", lambda *args: (_ for _ in ()).throw(RuntimeError("secret")))
+    monkeypatch.setattr(
+        migrate, "upgrade", lambda *args: (_ for _ in ()).throw(RuntimeError("secret"))
+    )
     monkeypatch.setattr(sys, "argv", ["rpt-migrate", "upgrade"])
 
     try:
