@@ -2,8 +2,8 @@
 
 `pyCommon` holds Python code shared across projects, initially the SQLAlchemy
 credential model and its versioned migrations. Database models live under
-`rpt_common.models`; other shared modules can live alongside that package. Central Auth reads this model; a separate provisioning project will
-create, enable, rotate, and disable credentials. There is no running service,
+`rpt_common.models`; other shared modules can live alongside that package. Central Auth reads this model. Provisioning and credential lifecycle management are
+outside this library. There is no running service,
 container image, or PyPI publication for this library.
 
 ## Model and requirements
@@ -78,12 +78,10 @@ make check test build
 Bindings remain in `rpt_protobuf`; database models and migrations belong here.
 Central Auth follows this repository's `main` branch, with an editable sibling
 checkout during development. Its CI resolves both shared dependencies once per run.
-Merge the initial shared-library implementation before expecting the Central Auth
-workflow to consume it from `main`.
 
 The library has no application-level configuration loader or database connection
 at import time. Migration resources are included in wheels and source distributions.
-See [the model-ownership decision](docs/adr/0001-shared-credential-model-and-migrations.md).
+See [current decisions](docs/decisions.md) for model and migration ownership.
 
 ## License
 
