@@ -25,6 +25,7 @@ otel = [
 
 [project.scripts]
 rpt-common-migrate = "rpt_common.migrate:main"
+rpt-common-admin = "rpt_common.admin:main"
 
 [dependency-groups]
 dev = ["pytest>=9.2,<10", "ruff>=0.17.4,<0.18", "build>=1.6,<2"]
