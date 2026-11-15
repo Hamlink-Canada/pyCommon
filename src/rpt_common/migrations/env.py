@@ -2,7 +2,7 @@
 
 from alembic import context
 
-from rpt_common.models.credentials import Base
+from rpt_common.models import Base
 
 connection = context.config.attributes.get("connection")
 if connection is None:

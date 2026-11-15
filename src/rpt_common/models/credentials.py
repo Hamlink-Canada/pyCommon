@@ -3,8 +3,8 @@
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, String, false
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, validates
 
-SCHEMA_REVISION = "0001_node_credentials"
-SUPPORTED_REVISIONS = frozenset({SCHEMA_REVISION})
+SCHEMA_REVISION = "0002_shared_entities"
+SUPPORTED_REVISIONS = frozenset({"0001_node_credentials", SCHEMA_REVISION})
 
 
 def valid_node_id(value):
