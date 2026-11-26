@@ -59,7 +59,7 @@ def upgrade():
             name="fk_call_sign_primary",
             deferrable=True,
             initially="DEFERRED",
-            ondelete="RESTRICT",
+            ondelete="NO ACTION",
         ),
         sa.PrimaryKeyConstraint("entity_id", "call_sign"),
         sa.UniqueConstraint(

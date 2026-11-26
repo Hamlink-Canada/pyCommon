@@ -126,6 +126,29 @@ def test_entity_call_sign_rules_and_promotion(tmp_path):
     engine.dispose()
 
 
+def test_entity_delete_cascades_primary_and_aka_signs(tmp_path):
+    url = f"sqlite:///{tmp_path / 'delete-entity.db'}"
+    upgrade(url)
+    engine = create_engine(url)
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection, record):
+        connection.execute("PRAGMA foreign_keys=ON")
+
+    entity = Entity(name="Delete Me", entity_type="club")
+    entity.add_primary_call_sign("VE3ABC")
+    entity.add_aka_call_sign("VE3XYZ")
+    with Session(engine) as session, session.begin():
+        session.add(entity)
+        session.flush()
+        entity_id = entity.id
+    with Session(engine) as session, session.begin():
+        session.delete(session.get(Entity, entity_id))
+    with Session(engine) as session:
+        assert session.scalars(select(EntityCallSign)).all() == []
+    engine.dispose()
+
+
 def test_entity_type_and_call_sign_normalization():
     with pytest.raises(ValueError, match="invalid entity type"):
         Entity(name="Test", entity_type="repeater")

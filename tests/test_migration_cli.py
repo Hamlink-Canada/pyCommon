@@ -39,6 +39,46 @@ def test_upgrade_disposes_engine_when_migration_fails(monkeypatch):
     assert disposed == [True]
 
 
+def test_sqlite_upgrade_rolls_back_ddl_and_version_on_failure(monkeypatch, tmp_path):
+    from sqlalchemy import create_engine, text
+
+    url = f"sqlite:///{tmp_path / 'rollback.db'}"
+    original_upgrade = migrate.command.upgrade
+
+    def fail_after_ddl(config, revision):
+        connection = config.attributes["connection"]
+        connection.execute(text("CREATE TABLE partial_upgrade (id INTEGER)"))
+        raise RuntimeError("failed after DDL")
+
+    monkeypatch.setattr(migrate.command, "upgrade", fail_after_ddl)
+    try:
+        migrate.upgrade(url)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("expected migration failure")
+    monkeypatch.setattr(migrate.command, "upgrade", original_upgrade)
+    engine = create_engine(url)
+    with engine.connect() as connection:
+        assert (
+            connection.scalar(
+                text(
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='partial_upgrade'"
+                )
+            )
+            == 0
+        )
+        assert (
+            connection.scalar(
+                text(
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='alembic_version'"
+                )
+            )
+            == 0
+        )
+    engine.dispose()
+
+
 def test_migration_cli_reads_url_file_and_forwards_revision(monkeypatch, tmp_path):
     secret = tmp_path / "database-url"
     secret.write_text("sqlite:///example.db\n")

@@ -7,13 +7,20 @@ from pathlib import Path
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
 
 
 def upgrade(url, revision="head"):
     config = Config()
     config.set_main_option("script_location", str(Path(__file__).parent / "migrations"))
     # Do not interpolate credentials into Alembic's ConfigParser or log them.
-    engine = create_engine(url, hide_parameters=True)
+    database_url = make_url(url)
+    engine_options = {"hide_parameters": True}
+    # sqlite3's legacy transaction mode leaves DDL outside the transaction,
+    # so a failed multi-step upgrade can leave a partial schema behind.
+    if database_url.get_backend_name() == "sqlite":
+        engine_options["connect_args"] = {"autocommit": False}
+    engine = create_engine(database_url, **engine_options)
     try:
         with engine.begin() as connection:
             config.attributes["connection"] = connection
