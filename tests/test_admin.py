@@ -138,3 +138,17 @@ def test_reset_entity_cli_uses_configured_database(tmp_path, monkeypatch, capsys
         assert reset.is_system_maintained is True
         assert session.scalars(select(EntitySuperAdmin)).all() == []
     engine.dispose()
+
+
+def test_admin_cli_reports_uncertain_outcome_on_database_error(monkeypatch, capsys):
+    monkeypatch.setenv("RPT_MIGRATION_DATABASE_URL", "sqlite:///unused.db")
+    monkeypatch.setattr(
+        "rpt_common.admin.transfer_entity_owner",
+        lambda *args: (_ for _ in ()).throw(RuntimeError("connection lost")),
+    )
+    with pytest.raises(SystemExit) as error:
+        main(["transfer-entity-owner", "7", "owner"])
+    assert error.value.code == 1
+    stderr = capsys.readouterr().err
+    assert "outcome may be unknown" in stderr
+    assert "connection lost" not in stderr

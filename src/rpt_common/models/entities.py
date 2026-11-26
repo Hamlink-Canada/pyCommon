@@ -164,7 +164,7 @@ class EntityCallSign(Base):
             name="fk_call_sign_primary",
             deferrable=True,
             initially="DEFERRED",
-            ondelete="RESTRICT",
+            ondelete="NO ACTION",
         ),
         CheckConstraint(
             "(is_primary = true AND call_sign = primary_call_sign) OR "

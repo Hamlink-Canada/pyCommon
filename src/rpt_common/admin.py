@@ -103,8 +103,8 @@ def main(argv=None):
     except Exception:
         parser.exit(
             1,
-            "Entity administration failed; no changes were committed. "
-            "Check the database connection and schema.\n",
+            "Entity administration failed; the operation outcome may be unknown. "
+            "Verify database state before retrying.\n",
         )
 
     if args.command == "reset-entity":
