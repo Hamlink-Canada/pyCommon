@@ -47,6 +47,7 @@ def test_sqlite_upgrade_rolls_back_ddl_and_version_on_failure(monkeypatch, tmp_p
 
     def fail_after_ddl(config, revision):
         connection = config.attributes["connection"]
+        original_upgrade(config, revision)
         connection.execute(text("CREATE TABLE partial_upgrade (id INTEGER)"))
         raise RuntimeError("failed after DDL")
 
