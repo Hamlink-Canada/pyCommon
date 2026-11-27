@@ -1,5 +1,7 @@
 import sys
 
+import pytest
+
 from rpt_common import migrate
 
 
@@ -47,16 +49,13 @@ def test_sqlite_upgrade_rolls_back_ddl_and_version_on_failure(monkeypatch, tmp_p
 
     def fail_after_ddl(config, revision):
         connection = config.attributes["connection"]
+        original_upgrade(config, revision)
         connection.execute(text("CREATE TABLE partial_upgrade (id INTEGER)"))
         raise RuntimeError("failed after DDL")
 
     monkeypatch.setattr(migrate.command, "upgrade", fail_after_ddl)
-    try:
+    with pytest.raises(RuntimeError, match="^failed after DDL$"):
         migrate.upgrade(url)
-    except RuntimeError:
-        pass
-    else:
-        raise AssertionError("expected migration failure")
     monkeypatch.setattr(migrate.command, "upgrade", original_upgrade)
     engine = create_engine(url)
     with engine.connect() as connection:
